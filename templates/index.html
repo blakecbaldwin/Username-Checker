@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Username Checker</title>
+    <style>
+        body { font-family: Arial; padding: 20px; max-width: 600px; margin: auto; }
+        h1 { color: #333; }
+        input, button { padding: 10px; margin-top: 10px; width: 100%; }
+        .results { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Check Username Availability</h1>
+    <form method="POST">
+        <input type="text" name="username" placeholder="Enter username..." required value="{{ username }}">
+        <button type="submit">Check</button>
+    </form>
+
+    {% if results %}
+    <div class="results">
+        <h2>Results:</h2>
+        <ul>
+            {% for site, status in results.items() %}
+            <li><strong>{{ site }}:</strong> {{ status }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+</body>
+</html>
