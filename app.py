@@ -3,17 +3,32 @@ import requests
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
+TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
 
 app = Flask(__name__)
+
+def get_twitch_access_token():
+    url = "https://id.twitch.tv/oauth2/token"
+    params = {
+        "client_id": TWITCH_CLIENT_ID,
+        "client_secret": TWITCH_CLIENT_SECRET,
+        "grant_type": "client_credentials"
+    }
+    try:
+        r = requests.post(url, params=params)
+        r.raise_for_status()
+        return r.json()["access_token"]
+    except:
+        return None
 
 def check_username(username):
     results = {}
 
-    # GitHub API with authentication
+    # GitHub
     github_url = f"https://api.github.com/users/{username}"
     github_headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
@@ -30,24 +45,7 @@ def check_username(username):
     except:
         results["GitHub"] = "⚠️ Request Failed"
 
-    # Reddit check with enhanced headers
-    reddit_url = f"https://www.reddit.com/user/{username}/about.json"
-    reddit_headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-        "Accept": "application/json"
-    }
-    try:
-        r = requests.get(reddit_url, headers=reddit_headers)
-        if r.status_code == 404:
-            results["Reddit"] = "✅ Available"
-        elif r.status_code == 200:
-            results["Reddit"] = "❌ Taken"
-        else:
-            results["Reddit"] = f"⚠️ Error ({r.status_code})"
-    except:
-        results["Reddit"] = "⚠️ Request Failed"
-
-    # Steam API
+    # Steam
     steam_url = "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
     params = {
         "key": STEAM_API_KEY,
@@ -63,6 +61,39 @@ def check_username(username):
     except:
         results["Steam"] = "⚠️ Request Failed"
 
+    # Twitch
+    twitch_token = get_twitch_access_token()
+    if not twitch_token:
+        results["Twitch"] = "⚠️ Auth Failed"
+    else:
+        twitch_url = f"https://api.twitch.tv/helix/users"
+        headers = {
+            "Client-ID": TWITCH_CLIENT_ID,
+            "Authorization": f"Bearer {twitch_token}"
+        }
+        try:
+            r = requests.get(twitch_url, headers=headers, params={"login": username})
+            if r.status_code != 200:
+                results["Twitch"] = f"⚠️ Error ({r.status_code})"
+            elif r.json()["data"]:
+                results["Twitch"] = "❌ Taken"
+            else:
+                results["Twitch"] = "✅ Available"
+        except:
+            results["Twitch"] = "⚠️ Request Failed"
+    
+    # Roblox
+    roblox_url = f"https://api.roblox.com/users/get-by-username?username={username}"
+    try:
+        r = requests.get(roblox_url)
+        data = r.json()
+        if "Id" in data and data["Id"] != 0:
+            results["Roblox"] = "❌ Taken"
+        else:
+            results["Roblox"] = "✅ Available"
+    except:
+        results["Roblox"] = "⚠️ Request Failed"
+
     return results
 
 @app.route("/", methods=["GET", "POST"])
@@ -76,5 +107,5 @@ def index():
     return render_template("index.html", username=username, results=results)
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # For local or Render
+    port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host="0.0.0.0", port=port)
