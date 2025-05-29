@@ -154,61 +154,13 @@
     function showSpinner() {
       document.getElementById('overlay').classList.add('show');
     }
-
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
-
     document.addEventListener('DOMContentLoaded', () => {
       const rows = document.querySelectorAll('.fade-slide');
       rows.forEach((row, i) => {
         setTimeout(() => row.classList.add('show'), i * 60);
       });
-
-      const username = '{{ username }}';
-      if (username) {
-        const extraServices = [
-          { name: "Instagram", url: `https://www.instagram.com/${username}/` },
-          { name: "TikTok", url: `https://www.tiktok.com/@${username}` },
-          { name: "YouTube", url: `https://www.youtube.com/@${username}` },
-        ];
-
-        extraServices.forEach(service => {
-          const li = document.createElement('li');
-          li.className = 'list-group-item d-flex justify-content-between align-items-center fade-slide';
-
-          const inner = document.createElement('div');
-          inner.className = 'd-flex align-items-center';
-
-          const img = document.createElement('img');
-          img.src = `/static/img/${service.name.toLowerCase()}.svg`;
-          img.alt = `${service.name} logo`;
-          img.className = 'logo me-2';
-
-          const strong = document.createElement('strong');
-          strong.className = 'me-2';
-          strong.textContent = `${service.name}:
-`;
-
-          const badge = document.createElement('span');
-          badge.className = 'badge bg-secondary';
-          badge.textContent = '❓ Unknown (Browser Limited)';
-
-          const link = document.createElement('a');
-          link.href = service.url;
-          link.target = '_blank';
-          link.className = 'linked-result';
-          link.title = `Check ${service.name}`;
-          link.appendChild(badge);
-
-          inner.appendChild(img);
-          inner.appendChild(strong);
-          inner.appendChild(link);
-          li.appendChild(inner);
-
-          document.getElementById('results').appendChild(li);
-          setTimeout(() => li.classList.add('show'), 500);
-        });
-      }
     });
   </script>
 </body>

@@ -128,6 +128,45 @@ def check_username(username):
             "url": None
         }
 
+    # TikTok
+    try:
+        url = f"https://www.tiktok.com/@{username}"
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        if r.status_code == 404:
+            results["TikTok"] = {"status": "✅ Available", "url": None}
+        elif r.status_code == 200:
+            results["TikTok"] = {"status": "❌ Taken", "url": url}
+        else:
+            results["TikTok"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+    except:
+        results["TikTok"] = {"status": "⚠️ Request Failed", "url": None}
+
+    # Instagram
+    try:
+        url = f"https://www.instagram.com/{username}/"
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        if r.status_code == 404:
+            results["Instagram"] = {"status": "✅ Available", "url": None}
+        elif r.status_code == 200:
+            results["Instagram"] = {"status": "❌ Taken", "url": url}
+        else:
+            results["Instagram"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+    except:
+        results["Instagram"] = {"status": "⚠️ Request Failed", "url": None}
+
+    # YouTube
+    try:
+        url = f"https://www.youtube.com/@{username}"
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        if r.status_code == 404:
+            results["YouTube"] = {"status": "✅ Available", "url": None}
+        elif r.status_code == 200:
+            results["YouTube"] = {"status": "❌ Taken", "url": url}
+        else:
+            results["YouTube"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+    except:
+        results["YouTube"] = {"status": "⚠️ Request Failed", "url": None}
+
     return results
 
 @app.route("/", methods=["GET", "POST"])
