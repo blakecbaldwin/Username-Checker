@@ -62,27 +62,6 @@ def check_username(username):
     except:
         results["Steam"] = {"status": "⚠️ Request Failed", "url": None}
 
-    # Twitch
-    twitch_token = get_twitch_access_token()
-    if not twitch_token:
-        results["Twitch"] = {"status": "⚠️ Auth Failed", "url": None}
-    else:
-        twitch_url = "https://api.twitch.tv/helix/users"
-        headers = {
-            "Client-ID": TWITCH_CLIENT_ID,
-            "Authorization": f"Bearer {twitch_token}"
-        }
-        try:
-            r = requests.get(twitch_url, headers=headers, params={"login": username})
-            if r.status_code != 200:
-                results["Twitch"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
-            elif r.json()["data"]:
-                results["Twitch"] = {"status": "❌ Taken", "url": f"https://www.twitch.tv/{username}"}
-            else:
-                results["Twitch"] = {"status": "✅ Available", "url": None}
-        except:
-            results["Twitch"] = {"status": "⚠️ Request Failed", "url": None}
-
     # Roblox
     roblox_url = "https://users.roblox.com/v1/usernames/users"
     headers = {
@@ -127,6 +106,27 @@ def check_username(username):
             "status": "⚠️ Request Failed",
             "url": None
         }
+
+    # Twitch
+    twitch_token = get_twitch_access_token()
+    if not twitch_token:
+        results["Twitch"] = {"status": "⚠️ Auth Failed", "url": None}
+    else:
+        twitch_url = "https://api.twitch.tv/helix/users"
+        headers = {
+            "Client-ID": TWITCH_CLIENT_ID,
+            "Authorization": f"Bearer {twitch_token}"
+        }
+        try:
+            r = requests.get(twitch_url, headers=headers, params={"login": username})
+            if r.status_code != 200:
+                results["Twitch"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+            elif r.json()["data"]:
+                results["Twitch"] = {"status": "❌ Taken", "url": f"https://www.twitch.tv/{username}"}
+            else:
+                results["Twitch"] = {"status": "✅ Available", "url": None}
+        except:
+            results["Twitch"] = {"status": "⚠️ Request Failed", "url": None}
 
     # TikTok
     try:
