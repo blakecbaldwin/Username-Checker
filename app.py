@@ -83,7 +83,7 @@ def check_username(username):
         except:
             results["Twitch"] = {"status": "⚠️ Request Failed", "url": None}
 
-    # Roblox (POST request)
+    # Roblox
     roblox_url = "https://users.roblox.com/v1/usernames/users"
     headers = {
         "User-Agent": "Mozilla/5.0",
@@ -102,6 +102,73 @@ def check_username(username):
             results["Roblox"] = {"status": "✅ Available", "url": None}
     except:
         results["Roblox"] = {"status": "⚠️ Request Failed", "url": None}
+
+    # Minecraft
+    try:
+        url = f"https://api.mojang.com/users/profiles/minecraft/{username}"
+        r = requests.get(url, timeout=5)
+        if r.status_code == 200 and r.text:
+            results["Minecraft"] = {
+                "status": "❌ Taken",
+                "url": f"https://namemc.com/profile/{username}"
+            }
+        elif r.status_code in [204, 404] or r.text == "":
+            results["Minecraft"] = {
+                "status": "✅ Available",
+                "url": None
+            }
+        else:
+            results["Minecraft"] = {
+                "status": f"⚠️ Error ({r.status_code})",
+                "url": None
+            }
+    except Exception as e:
+        results["Minecraft"] = {
+            "status": "⚠️ Request Failed",
+            "url": None
+        }
+
+    # Instagram (404-based)
+    try:
+        url = f"https://www.instagram.com/{username}/"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        r = requests.head(url, headers=headers, timeout=5)
+        if r.status_code == 200:
+            results["Instagram"] = {"status": "❌ Taken", "url": url}
+        elif r.status_code == 404:
+            results["Instagram"] = {"status": "✅ Available", "url": None}
+        else:
+            results["Instagram"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+    except:
+        results["Instagram"] = {"status": "⚠️ Request Failed", "url": None}
+
+    # TikTok (404-based)
+    try:
+        url = f"https://www.tiktok.com/@{username}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        r = requests.head(url, headers=headers, timeout=5)
+        if r.status_code == 200:
+            results["TikTok"] = {"status": "❌ Taken", "url": url}
+        elif r.status_code == 404:
+            results["TikTok"] = {"status": "✅ Available", "url": None}
+        else:
+            results["TikTok"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+    except:
+        results["TikTok"] = {"status": "⚠️ Request Failed", "url": None}
+
+    # YouTube (404-based)
+    try:
+        url = f"https://www.youtube.com/@{username}"
+        headers = {"User-Agent": "Mozilla/5.0"}
+        r = requests.head(url, headers=headers, timeout=5)
+        if r.status_code == 200:
+            results["YouTube"] = {"status": "❌ Taken", "url": url}
+        elif r.status_code == 404:
+            results["YouTube"] = {"status": "✅ Available", "url": None}
+        else:
+            results["YouTube"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+    except:
+        results["YouTube"] = {"status": "⚠️ Request Failed", "url": None}
 
     return results
 
