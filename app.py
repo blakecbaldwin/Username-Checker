@@ -3,6 +3,7 @@ import requests
 import os
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 STEAM_API_KEY = os.getenv("STEAM_API_KEY")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -30,20 +31,20 @@ def check_username(username):
 
     # GitHub
     github_url = f"https://api.github.com/users/{username}"
-    github_headers = {
+    headers = {
         "Authorization": f"token {GITHUB_TOKEN}",
         "User-Agent": "username-checker"
     }
     try:
-        r = requests.get(github_url, headers=github_headers)
+        r = requests.get(github_url, headers=headers)
         if r.status_code == 404:
-            results["GitHub"] = "✅ Available"
+            results["GitHub"] = {"status": "✅ Available", "url": None}
         elif r.status_code == 200:
-            results["GitHub"] = "❌ Taken"
+            results["GitHub"] = {"status": "❌ Taken", "url": f"https://github.com/{username}"}
         else:
-            results["GitHub"] = f"⚠️ Error ({r.status_code})"
+            results["GitHub"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
     except:
-        results["GitHub"] = "⚠️ Request Failed"
+        results["GitHub"] = {"status": "⚠️ Request Failed", "url": None}
 
     # Steam
     steam_url = "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
@@ -55,18 +56,18 @@ def check_username(username):
         r = requests.get(steam_url, params=params)
         data = r.json()
         if data["response"]["success"] == 1:
-            results["Steam"] = "❌ Taken"
+            results["Steam"] = {"status": "❌ Taken", "url": f"https://steamcommunity.com/id/{username}"}
         else:
-            results["Steam"] = "✅ Available"
+            results["Steam"] = {"status": "✅ Available", "url": None}
     except:
-        results["Steam"] = "⚠️ Request Failed"
+        results["Steam"] = {"status": "⚠️ Request Failed", "url": None}
 
     # Twitch
     twitch_token = get_twitch_access_token()
     if not twitch_token:
-        results["Twitch"] = "⚠️ Auth Failed"
+        results["Twitch"] = {"status": "⚠️ Auth Failed", "url": None}
     else:
-        twitch_url = f"https://api.twitch.tv/helix/users"
+        twitch_url = "https://api.twitch.tv/helix/users"
         headers = {
             "Client-ID": TWITCH_CLIENT_ID,
             "Authorization": f"Bearer {twitch_token}"
@@ -74,32 +75,33 @@ def check_username(username):
         try:
             r = requests.get(twitch_url, headers=headers, params={"login": username})
             if r.status_code != 200:
-                results["Twitch"] = f"⚠️ Error ({r.status_code})"
+                results["Twitch"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
             elif r.json()["data"]:
-                results["Twitch"] = "❌ Taken"
+                results["Twitch"] = {"status": "❌ Taken", "url": f"https://www.twitch.tv/{username}"}
             else:
-                results["Twitch"] = "✅ Available"
+                results["Twitch"] = {"status": "✅ Available", "url": None}
         except:
-            results["Twitch"] = "⚠️ Request Failed"
-    
-    # Roblox
-    roblox_url = f"https://api.roblox.com/users/get-by-username?username={username}"
+            results["Twitch"] = {"status": "⚠️ Request Failed", "url": None}
+
+    # Roblox (POST request)
+    roblox_url = "https://users.roblox.com/v1/usernames/users"
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "usernames": [username],
+        "excludeBannedUsers": False
+    }
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-        }
-        r = requests.get(roblox_url, headers=headers)
-        
-        try:
-            data = r.json()
-            if "Id" in data and data["Id"] != 0:
-                results["Roblox"] = "❌ Taken"
-            else:
-                results["Roblox"] = "✅ Available"
-        except ValueError:
-            results["Roblox"] = "⚠️ Invalid JSON (possibly blocked by Roblox)"
+        r = requests.post(roblox_url, headers=headers, json=payload)
+        data = r.json()
+        if data.get("data"):
+            results["Roblox"] = {"status": "❌ Taken", "url": f"https://www.roblox.com/users/profile?username={username}"}
+        else:
+            results["Roblox"] = {"status": "✅ Available", "url": None}
     except:
-        results["Roblox"] = "⚠️ Request Failed"
+        results["Roblox"] = {"status": "⚠️ Request Failed", "url": None}
 
     return results
 
