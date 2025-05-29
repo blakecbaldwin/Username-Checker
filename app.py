@@ -85,12 +85,19 @@ def check_username(username):
     # Roblox
     roblox_url = f"https://api.roblox.com/users/get-by-username?username={username}"
     try:
-        r = requests.get(roblox_url)
-        data = r.json()
-        if "Id" in data and data["Id"] != 0:
-            results["Roblox"] = "❌ Taken"
-        else:
-            results["Roblox"] = "✅ Available"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
+        r = requests.get(roblox_url, headers=headers)
+        
+        try:
+            data = r.json()
+            if "Id" in data and data["Id"] != 0:
+                results["Roblox"] = "❌ Taken"
+            else:
+                results["Roblox"] = "✅ Available"
+        except ValueError:
+            results["Roblox"] = "⚠️ Invalid JSON (possibly blocked by Roblox)"
     except:
         results["Roblox"] = "⚠️ Request Failed"
 
