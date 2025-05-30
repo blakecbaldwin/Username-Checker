@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, request
 import requests
 import os
@@ -28,107 +29,61 @@ def get_twitch_access_token():
 
 def check_username(username):
     results = {}
+    print(f"\n🔍 Checking username: {username}\n")
 
     # GitHub
-    github_url = f"https://api.github.com/users/{username}"
-    headers = {
-        "Authorization": f"token {GITHUB_TOKEN}",
-        "User-Agent": "username-checker"
-    }
     try:
+        github_url = f"https://api.github.com/users/{username}"
+        headers = {"Authorization": f"token {GITHUB_TOKEN}", "User-Agent": "username-checker"}
         r = requests.get(github_url, headers=headers)
-        if r.status_code == 404:
-            results["GitHub"] = {"status": "✅ Available", "url": None}
-        elif r.status_code == 200:
-            results["GitHub"] = {"status": "❌ Taken", "url": f"https://github.com/{username}"}
-        else:
-            results["GitHub"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+        results["GitHub"] = {"status": "❌ Taken", "url": f"https://github.com/{username}"} if r.status_code == 200 else {"status": "✅ Available", "url": None}
     except:
         results["GitHub"] = {"status": "⚠️ Request Failed", "url": None}
 
     # Steam
-    steam_url = "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
-    params = {
-        "key": STEAM_API_KEY,
-        "vanityurl": username
-    }
     try:
-        r = requests.get(steam_url, params=params)
+        url = "https://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/"
+        params = {"key": STEAM_API_KEY, "vanityurl": username}
+        r = requests.get(url, params=params)
         data = r.json()
-        if data["response"]["success"] == 1:
-            results["Steam"] = {"status": "❌ Taken", "url": f"https://steamcommunity.com/id/{username}"}
-        else:
-            results["Steam"] = {"status": "✅ Available", "url": None}
+        results["Steam"] = {"status": "❌ Taken", "url": f"https://steamcommunity.com/id/{username}"} if data["response"]["success"] == 1 else {"status": "✅ Available", "url": None}
     except:
         results["Steam"] = {"status": "⚠️ Request Failed", "url": None}
 
     # Roblox
-    roblox_url = "https://users.roblox.com/v1/usernames/users"
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "usernames": [username],
-        "excludeBannedUsers": False
-    }
     try:
-        r = requests.post(roblox_url, headers=headers, json=payload)
+        url = "https://users.roblox.com/v1/usernames/users"
+        headers = {"Content-Type": "application/json"}
+        payload = {"usernames": [username], "excludeBannedUsers": False}
+        r = requests.post(url, json=payload, headers=headers)
         data = r.json()
-        if data.get("data"):
-            results["Roblox"] = {"status": "❌ Taken", "url": f"https://www.roblox.com/users/profile?username={username}"}
-        else:
-            results["Roblox"] = {"status": "✅ Available", "url": None}
+        results["Roblox"] = {"status": "❌ Taken", "url": f"https://www.roblox.com/users/profile?username={username}"} if data.get("data") else {"status": "✅ Available", "url": None}
     except:
         results["Roblox"] = {"status": "⚠️ Request Failed", "url": None}
 
     # Minecraft
     try:
         url = f"https://api.mojang.com/users/profiles/minecraft/{username}"
-        r = requests.get(url, timeout=5)
-        if r.status_code == 200 and r.text:
-            results["Minecraft"] = {
-                "status": "❌ Taken",
-                "url": f"https://namemc.com/profile/{username}"
-            }
-        elif r.status_code in [204, 404] or r.text == "":
-            results["Minecraft"] = {
-                "status": "✅ Available",
-                "url": None
-            }
-        else:
-            results["Minecraft"] = {
-                "status": f"⚠️ Error ({r.status_code})",
-                "url": None
-            }
+        r = requests.get(url)
+        results["Minecraft"] = {"status": "❌ Taken", "url": f"https://namemc.com/profile/{username}"} if r.status_code == 200 else {"status": "✅ Available", "url": None}
     except:
-        results["Minecraft"] = {
-            "status": "⚠️ Request Failed",
-            "url": None
-        }
+        results["Minecraft"] = {"status": "⚠️ Request Failed", "url": None}
 
     # Twitch
     twitch_token = get_twitch_access_token()
     if not twitch_token:
         results["Twitch"] = {"status": "⚠️ Auth Failed", "url": None}
     else:
-        twitch_url = "https://api.twitch.tv/helix/users"
-        headers = {
-            "Client-ID": TWITCH_CLIENT_ID,
-            "Authorization": f"Bearer {twitch_token}"
-        }
         try:
-            r = requests.get(twitch_url, headers=headers, params={"login": username})
-            if r.status_code != 200:
-                results["Twitch"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
-            elif r.json()["data"]:
-                results["Twitch"] = {"status": "❌ Taken", "url": f"https://www.twitch.tv/{username}"}
-            else:
-                results["Twitch"] = {"status": "✅ Available", "url": None}
+            url = "https://api.twitch.tv/helix/users"
+            headers = {"Client-ID": TWITCH_CLIENT_ID, "Authorization": f"Bearer {twitch_token}"}
+            r = requests.get(url, headers=headers, params={"login": username})
+            data = r.json()
+            results["Twitch"] = {"status": "❌ Taken", "url": f"https://www.twitch.tv/{username}"} if data.get("data") else {"status": "✅ Available", "url": None}
         except:
             results["Twitch"] = {"status": "⚠️ Request Failed", "url": None}
 
-    # TikTok
+# TikTok
     try:
         url = f"https://www.tiktok.com/@{username}"
         r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
@@ -158,14 +113,30 @@ def check_username(username):
     try:
         url = f"https://www.youtube.com/@{username}"
         r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-        if r.status_code == 404:
-            results["YouTube"] = {"status": "✅ Available", "url": None}
-        elif r.status_code == 200:
-            results["YouTube"] = {"status": "❌ Taken", "url": url}
-        else:
-            results["YouTube"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
+        results["YouTube"] = {"status": "❌ Taken", "url": url} if r.status_code == 200 else {"status": "✅ Available", "url": None}
     except:
         results["YouTube"] = {"status": "⚠️ Request Failed", "url": None}
+
+    # Facebook
+    try:
+        url = f"https://www.facebook.com/{username}"
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
+        if r.status_code == 404 or "content isn't available" in r.text.lower():
+            results["Facebook"] = {"status": "✅ Available", "url": None}
+        elif username.lower() in r.text.lower():
+            results["Facebook"] = {"status": "❌ Taken", "url": url}
+        else:
+            results["Facebook"] = {"status": "⚠️ Unclear", "url": None}
+    except:
+        results["Facebook"] = {"status": "⚠️ Request Failed", "url": None}
+
+    # Snapchat
+    try:
+        url = f"https://www.snapchat.com/add/{username}"
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        results["Snapchat"] = {"status": "❌ Taken", "url": url} if r.status_code == 200 else {"status": "✅ Available", "url": None}
+    except:
+        results["Snapchat"] = {"status": "⚠️ Request Failed", "url": None}
 
     return results
 
@@ -181,4 +152,4 @@ def index():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
+    app.run(debug=True, host="0.0.0.0", port=port)
