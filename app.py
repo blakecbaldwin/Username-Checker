@@ -1,7 +1,8 @@
-
 from flask import Flask, render_template, request
 import requests
 import os
+import time
+import random
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -83,31 +84,41 @@ def check_username(username):
         except:
             results["Twitch"] = {"status": "⚠️ Request Failed", "url": None}
 
-# TikTok
+    # TikTok (final fix using 'userInfo' in HTML)
     try:
         url = f"https://www.tiktok.com/@{username}"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-        if r.status_code == 404:
-            results["TikTok"] = {"status": "✅ Available", "url": None}
-        elif r.status_code == 200:
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+
+        time.sleep(random.uniform(1.5, 3.5))
+
+        r = requests.get(url, headers=headers, timeout=5)
+        html = r.text.lower()
+
+        if "userinfo" in html:
             results["TikTok"] = {"status": "❌ Taken", "url": url}
         else:
-            results["TikTok"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
-    except:
-        results["TikTok"] = {"status": "⚠️ Request Failed", "url": None}
+            results["TikTok"] = {"status": "✅ Available", "url": None}
+    except Exception as e:
+        results["TikTok"] = {"status": f"⚠️ Error: {e}", "url": None}
 
-    # Instagram
+    # Instagram (final fix using Open Graph tags)
     try:
         url = f"https://www.instagram.com/{username}/"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
-        if r.status_code == 404:
-            results["Instagram"] = {"status": "✅ Available", "url": None}
-        elif r.status_code == 200:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1.1 Mobile/15E148 Safari/604.1"
+        }
+
+        time.sleep(random.uniform(1.5, 3.5))
+
+        r = requests.get(url, headers=headers, timeout=5)
+        html = r.text.lower()
+
+        if "og:image" in html and "og:description" in html:
             results["Instagram"] = {"status": "❌ Taken", "url": url}
         else:
-            results["Instagram"] = {"status": f"⚠️ Error ({r.status_code})", "url": None}
-    except:
-        results["Instagram"] = {"status": "⚠️ Request Failed", "url": None}
+            results["Instagram"] = {"status": "✅ Available", "url": None}
+    except Exception as e:
+        results["Instagram"] = {"status": f"⚠️ Error: {e}", "url": None}
 
     # YouTube
     try:
@@ -120,13 +131,15 @@ def check_username(username):
     # Facebook
     try:
         url = f"https://www.facebook.com/{username}"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5)
-        if r.status_code == 404 or "content isn't available" in r.text.lower():
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5, allow_redirects=True)
+        final_url = r.url.lower()
+
+        if r.status_code == 404 or "content isn't available" in r.text.lower() or "page isn't available" in r.text.lower():
             results["Facebook"] = {"status": "✅ Available", "url": None}
-        elif username.lower() in r.text.lower():
-            results["Facebook"] = {"status": "❌ Taken", "url": url}
+        elif username.lower() in final_url.replace(".", ""):
+            results["Facebook"] = {"status": "❌ Taken", "url": final_url}
         else:
-            results["Facebook"] = {"status": "⚠️ Unclear", "url": None}
+            results["Facebook"] = {"status": "❌ Taken", "url": final_url}
     except:
         results["Facebook"] = {"status": "⚠️ Request Failed", "url": None}
 
