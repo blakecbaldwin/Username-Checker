@@ -15,9 +15,9 @@ TWITCH_CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
 
 app = Flask(__name__)
 
-# --- Username validation rules ---
+# --- Username validation rules (no case sensitivity restrictions) ---
 def is_valid_github(username):
-    return re.fullmatch(r"[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}", username, re.IGNORECASE) is not None
+    return re.fullmatch(r"[a-zA-Z\d](?:[a-zA-Z\d]|-(?=[a-zA-Z\d])){0,38}", username) is not None
 
 def is_valid_tiktok(username):
     return re.fullmatch(r"[a-zA-Z_\.][a-zA-Z0-9_\.]{1,23}", username) is not None
@@ -38,13 +38,13 @@ def is_valid_roblox(username):
     return re.fullmatch(r"[a-zA-Z0-9_]{3,20}", username) is not None
 
 def is_valid_twitch(username):
-    return re.fullmatch(r"[a-z0-9_]{4,25}", username) is not None
+    return re.fullmatch(r"[a-zA-Z0-9_]{4,25}", username) is not None
 
 def is_valid_minecraft(username):
     return re.fullmatch(r"[a-zA-Z0-9_]{3,16}", username) is not None
 
 def is_valid_steam(username):
-    return 2 <= len(username) <= 32  # Vanity URLs are loosely validated
+    return 2 <= len(username) <= 32
 
 validation_map = {
     "GitHub": is_valid_github,
@@ -59,7 +59,6 @@ validation_map = {
     "Steam": is_valid_steam,
 }
 
-# --- Twitch OAuth ---
 def get_twitch_access_token():
     url = "https://id.twitch.tv/oauth2/token"
     params = {
@@ -74,7 +73,6 @@ def get_twitch_access_token():
     except:
         return None
 
-# --- Main checker ---
 def check_username(username):
     results = {}
     print(f"\n🔍 Checking username: {username}\n")
@@ -166,11 +164,21 @@ def check_username(username):
     else:
         try:
             url = f"https://www.instagram.com/{username}/"
-            headers = {"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_5 like Mac OS X)"}
+            headers = {
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_5 like Mac OS X) "
+                              "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1 Mobile/15E148 Safari/604.1"
+            }
             time.sleep(random.uniform(1.5, 3.5))
             r = requests.get(url, headers=headers, timeout=5)
             html = r.text.lower()
-            results["Instagram"] = {"status": "❌ Taken", "url": url} if "og:image" in html and "og:description" in html else {"status": "✅ Available", "url": None}
+
+            # Case: Username exists (profile has meta tags)
+            if "og:image" in html and "og:description" in html:
+                results["Instagram"] = {"status": "❌ Taken", "url": url}
+            else:
+                # No meta tags = profile likely does not exist
+                results["Instagram"] = {"status": "✅ Available", "url": None}
+
         except Exception as e:
             results["Instagram"] = {"status": f"⚠️ Error: {e}", "url": None}
 
