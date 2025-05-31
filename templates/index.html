@@ -2,6 +2,18 @@
   'Instagram', 'TikTok', 'YouTube', 'Steam', 'Roblox',
   'Minecraft', 'Twitch', 'GitHub', 'Snapchat', 'Facebook'
 ] %}
+{% set tooltips = {
+  'GitHub': "Only a-z, 0-9, hyphens. Max 39 characters. No underscores or spaces.",
+  'TikTok': "2–24 characters. Letters, numbers, underscores, and periods only.",
+  'Instagram': "Up to 30 characters. Letters, numbers, underscores, periods only.",
+  'Facebook': "5–50 characters. Letters, numbers, and periods only. No underscores or symbols.",
+  'YouTube': "Letters, numbers, underscores only.",
+  'Snapchat': "3–15 characters. Letters, numbers, and underscores only.",
+  'Roblox': "3–20 characters. No special characters allowed.",
+  'Twitch': "4–25 lowercase letters, numbers, and underscores only.",
+  'Minecraft': "3–16 characters. Letters, numbers, underscores only.",
+  'Steam': "2–32 characters. Letters and numbers only."
+} %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,6 +58,10 @@
     }
     .badge i {
       margin-left: 0.35em;
+    }
+    .badge.bg-warning-custom {
+      background-color: #e67e22;
+      color: #ffffff;
     }
     .overlay {
       display: none;
@@ -144,6 +160,8 @@
                 {% else %}
                   {% if "✅" in result.status %}
                     <span class="badge bg-success">Available</span>
+                  {% elif "❌ Invalid" in result.status %}
+                    <span class="badge bg-warning-custom" data-bs-toggle="tooltip" title="{{ tooltips[site] }}">Invalid</span>
                   {% elif "❌" in result.status %}
                     <span class="badge bg-danger">Taken</span>
                   {% else %}
