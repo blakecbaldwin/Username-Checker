@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>About | Username Scan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .content {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 2rem;
+      background-color: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #f0f0f0;
+      }
+      .content {
+        background-color: #1e1e1e;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container content">
+    <h1>About Username Scan</h1>
+    <p><strong>Username Scan</strong> is a tool designed to help you quickly check if a username is available across multiple popular platforms. Whether you're a content creator, brand, or gamer, finding a consistent name is important—and that's where we come in.</p>
+
+    <h4>What We Do</h4>
+    <ul>
+      <li>Check username availability on sites like YouTube, Twitch, TikTok, GitHub, and more.</li>
+      <li>Show results clearly with links to existing profiles when usernames are taken.</li>
+      <li>Validate usernames with accurate pattern checks per platform.</li>
+    </ul>
+
+    <h4>Why Use This?</h4>
+    <p>Instead of manually searching each site, use Username Scan to get results all in one place—fast and simple.</p>
+
+    <h4>Note</h4>
+    <p>This is an unofficial tool and not affiliated with any of the platforms it checks.</p>
+
+    <div class="mt-4">
+      <a href="{{ url_for('index') }}" class="btn btn-primary">← Back to Home</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact / Report a Bug | Username Scan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .content {
+      max-width: 700px;
+      margin: 4rem auto;
+      padding: 2rem;
+      background-color: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    }
+    .form-control {
+      border-radius: 0.5rem;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #f0f0f0;
+      }
+      .content {
+        background-color: #1e1e1e;
+      }
+      .form-control {
+        background-color: #2a2a2a;
+        color: #f0f0f0;
+        border-color: #555;
+      }
+      .form-control::placeholder {
+        color: #bbbbbb !important;
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container content">
+    <h1 class="mb-4">Contact / Report a Bug</h1>
+
+    <p>If you have a suggestion, business inquiry, or need to report a bug, please use the form below. For bug reports, include the following to help us reproduce the issue:</p>
+    <ul>
+      <li>The username you searched</li>
+      <li>The platform(s) affected</li>
+      <li>What you expected to happen</li>
+      <li>What actually happened</li>
+      <li>Any error messages shown (if applicable)</li>
+    </ul>
+
+    <form method="POST" action="#" onsubmit="alert('Thank you! We will review your message shortly.'); return false;">
+      <div class="mb-3">
+        <label for="email" class="form-label">Your Email (optional)</label>
+        <input type="email" class="form-control" id="email" placeholder="you@example.com">
+      </div>
+      <div class="mb-3">
+        <label for="subject" class="form-label">Subject</label>
+        <input type="text" class="form-control" id="subject" required placeholder="Bug report, feedback, etc.">
+      </div>
+      <div class="mb-3">
+        <label for="message" class="form-label">Message</label>
+        <textarea class="form-control" id="message" rows="6" required placeholder="Describe your issue or feedback here..."></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary">Send</button>
+      <a href="{{ url_for('index') }}" class="btn btn-outline-secondary ms-2">Back to Home</a>
+    </form>
+  </div>
+</body>
+</html>

@@ -5,6 +5,7 @@ import pkgutil
 import time
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 
 load_dotenv()
 app = Flask(__name__)
@@ -63,7 +64,12 @@ def check_username(username):
 
     return results
 
-# Flask Routes
+# Inject current year for footer
+@app.context_processor
+def inject_now():
+    return {'current_year': datetime.now().year}
+
+# Main route
 @app.route("/", methods=["GET", "POST"])
 def index():
     results = {}
@@ -79,6 +85,23 @@ def index():
         platforms=platform_checkers.keys(),
         tooltips=tooltips
     )
+
+# Static pages
+@app.route("/about")
+def about():
+    return render_template("about.html")
+
+@app.route("/privacy")
+def privacy():
+    return render_template("privacy.html")
+
+@app.route("/terms")
+def terms():
+    return render_template("terms.html")
+
+@app.route("/contact")
+def contact():
+    return render_template("contact.html")
 
 # Run app
 if __name__ == "__main__":

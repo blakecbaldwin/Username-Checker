@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Terms of Service | Username Scan</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      color: #212529;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .content {
+      max-width: 800px;
+      margin: 4rem auto;
+      padding: 2rem;
+      background-color: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.05);
+    }
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-color: #121212;
+        color: #f0f0f0;
+      }
+      .content {
+        background-color: #1e1e1e;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container content">
+    <h1>Terms of Service</h1>
+    <p>By using <strong>Username Scan</strong>, you agree to the following terms:</p>
+
+    <h4>1. Use at Your Own Risk</h4>
+    <p>This tool is provided “as-is” with no guarantees of accuracy or availability. We make no warranty that the service will be error-free or uninterrupted.</p>
+
+    <h4>2. No Account Creation or Data Storage</h4>
+    <p>We do not collect, store, or require user accounts. Your input is processed in real-time and discarded immediately after.</p>
+
+    <h4>3. Intellectual Property</h4>
+    <p>This site and its design are the property of its creator. You may not reproduce, copy, or reuse the site's code or branding without permission.</p>
+
+    <h4>4. External Services</h4>
+    <p>This site interacts with external platforms to perform username availability checks. We are not affiliated with any of these platforms.</p>
+
+    <h4>5. Changes</h4>
+    <p>We may revise these terms at any time without notice. Continued use of the site implies acceptance of the updated terms.</p>
+
+    <div class="mt-4">
+      <a href="{{ url_for('index') }}" class="btn btn-primary">← Back to Home</a>
+    </div>
+  </div>
+</body>
+</html>
