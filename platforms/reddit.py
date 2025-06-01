@@ -1,3 +1,9 @@
+import re
+import requests
+
+def validate(username):
+    return re.fullmatch(r"[A-Za-z0-9_-]{3,20}", username) is not None
+
 def check(username):
     try:
         url = f"https://www.reddit.com/user/{username}/about.json"
@@ -5,10 +11,7 @@ def check(username):
             "User-Agent": "Mozilla/5.0 (compatible; username-checker/1.0)"
         }
         r = requests.get(url, headers=headers, timeout=5)
-
-        # Debug: log status code
         print(f"[Reddit] Status: {r.status_code} for username '{username}'")
-
         if r.status_code == 200:
             return {"status": "Taken", "url": f"https://www.reddit.com/user/{username}/"}
         elif r.status_code == 404:
@@ -18,3 +21,9 @@ def check(username):
     except Exception as e:
         print(f"[Reddit] Exception: {e}")
         return {"status": "Request Failed", "url": None}
+
+reddit_checker = {
+    "validate": validate,
+    "check": check,
+    "tooltip": "3–20 characters. Letters, numbers, hyphens, and underscores only."
+}
