@@ -7,16 +7,24 @@ def validate(username):
 def check(username):
     try:
         url = f"https://www.facebook.com/{username}"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=5, allow_redirects=True)
+        headers = {"User-Agent": "Mozilla/5.0"}
+        r = requests.get(url, headers=headers, timeout=5, allow_redirects=True)
         final_url = r.url.lower()
-        if r.status_code == 404 or "content isn't available" in r.text.lower() or "page isn't available" in r.text.lower():
-            return {"status": "✅ Available", "url": None}
-        elif username.lower() in final_url.replace(".", ""):
-            return {"status": "❌ Taken", "url": final_url}
-        else:
-            return {"status": "❌ Taken", "url": final_url}
-    except:
-        return {"status": "⚠️ Request Failed", "url": None}
+        html = r.text.lower()
+
+        # Case: clearly not found or invalid page
+        if r.status_code == 404 or "content isn't available" in html or "page isn't available" in html:
+            return {"status": "Available", "url": None}
+
+        # Heuristic: if the final URL includes the username and no error is shown, it's taken
+        normalized = username.lower().replace(".", "")
+        if normalized in final_url.replace(".", "") and "content isn't available" not in html:
+            return {"status": "Taken", "url": final_url}
+
+        # Fallback if ambiguous
+        return {"status": "Available", "url": None}
+    except Exception as e:
+        return {"status": f"Request Failed: {e}", "url": None}
 
 facebook_checker = {
     "validate": validate,
