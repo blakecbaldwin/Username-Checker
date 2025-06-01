@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, flash, url_for
 import os
 import importlib
 import pkgutil
@@ -6,15 +6,17 @@ import time
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
+from contact import send_contact_email
 
 load_dotenv()
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
 
-# Dynamically load all checkers from platforms/ folder
+# Load platform checkers
 platform_checkers = {}
 tooltips = {}
-
 package_dir = os.path.join(os.path.dirname(__file__), "platforms")
+
 for _, module_name, _ in pkgutil.iter_modules([package_dir]):
     module = importlib.import_module(f"platforms.{module_name}")
     checker_attr = f"{module_name}_checker"
@@ -22,13 +24,12 @@ for _, module_name, _ in pkgutil.iter_modules([package_dir]):
         checker = getattr(module, checker_attr)
         platform_name = module_name.capitalize()
         platform_checkers[platform_name] = checker
-
         if "tooltip" in checker:
             tooltips[platform_name] = checker["tooltip"]
 
 print("Loaded platforms:", list(platform_checkers.keys()))
 
-# Perform username checks in parallel
+# Username check logic
 def check_username(username):
     results = {}
 
@@ -38,7 +39,6 @@ def check_username(username):
         try:
             if not validate_func(username):
                 return platform, {"status": "Invalid", "url": None}, 0.0
-
             start = time.time()
             result = check_func(username)
             duration = time.time() - start
@@ -64,12 +64,12 @@ def check_username(username):
 
     return results
 
-# Inject current year for footer
+# Inject year
 @app.context_processor
 def inject_now():
     return {'current_year': datetime.now().year}
 
-# Main route
+# Routes
 @app.route("/", methods=["GET", "POST"])
 def index():
     results = {}
@@ -78,15 +78,9 @@ def index():
         username = request.form.get("username", "").strip()
         if username:
             results = check_username(username)
-    return render_template(
-        "index.html",
-        username=username,
-        results=results,
-        platforms=platform_checkers.keys(),
-        tooltips=tooltips
-    )
+    return render_template("index.html", username=username, results=results,
+                           platforms=platform_checkers.keys(), tooltips=tooltips)
 
-# Static pages
 @app.route("/about")
 def about():
     return render_template("about.html")
@@ -99,9 +93,43 @@ def privacy():
 def terms():
     return render_template("terms.html")
 
-@app.route("/contact")
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html")
+    recaptcha_site_key = os.getenv("RECAPTCHA_SITE_KEY")
+
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip()
+        subject = request.form.get("subject", "").strip()
+        message = request.form.get("message", "").strip()
+        recaptcha_response = request.form.get("g-recaptcha-response")
+
+        if not all([name, subject, message]):
+            flash("Please fill out all required fields.", "danger")
+        elif not recaptcha_response:
+            flash("Please complete the reCAPTCHA.", "danger")
+        else:
+            # Optional: verify reCAPTCHA server-side
+            """
+            import requests
+            recaptcha_secret = os.getenv("RECAPTCHA_SECRET_KEY")
+            verify_resp = requests.post("https://www.google.com/recaptcha/api/siteverify", data={
+                "secret": recaptcha_secret,
+                "response": recaptcha_response
+            }).json()
+            if not verify_resp.get("success"):
+                flash("reCAPTCHA verification failed.", "danger")
+                return render_template("contact.html", recaptcha_site_key=recaptcha_site_key)
+            """
+
+            success = send_contact_email(name, email, subject, message)
+            if success:
+                flash("Message sent successfully!", "success")
+                return redirect(url_for("contact"))
+            else:
+                flash("Failed to send message. Please try again later.", "danger")
+
+    return render_template("contact.html", recaptcha_site_key=recaptcha_site_key)
 
 # Run app
 if __name__ == "__main__":
