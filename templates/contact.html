@@ -23,6 +23,7 @@
     .form-control {
       border-radius: 0.5rem;
     }
+
     @media (prefers-color-scheme: dark) {
       body {
         background-color: #121212;
@@ -47,15 +48,6 @@
   <div class="container content">
     <h1 class="mb-4">Contact / Report a Bug</h1>
 
-    <p>If you have a suggestion, business inquiry, or need to report a bug, please use the form below. For bug reports, include the following:</p>
-    <ul>
-      <li>The username you searched</li>
-      <li>The platform(s) affected</li>
-      <li>What you expected to happen</li>
-      <li>What actually happened</li>
-      <li>Any error messages (if applicable)</li>
-    </ul>
-
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -67,10 +59,19 @@
       {% endif %}
     {% endwith %}
 
-    <form method="POST" action="/contact">
+    <p>If you have a suggestion, business inquiry, or need to report a bug, please use the form below. For bug reports, include the following:</p>
+    <ul>
+      <li>The username you searched</li>
+      <li>The platform(s) affected</li>
+      <li>What you expected to happen</li>
+      <li>What actually happened</li>
+      <li>Any error messages (if applicable)</li>
+    </ul>
+
+    <form method="POST" action="{{ url_for('contact') }}">
       <div class="mb-3">
         <label for="name" class="form-label">Your Name</label>
-        <input type="text" name="name" class="form-control" id="name" required placeholder="John Doe">
+        <input type="text" name="name" class="form-control" id="name" required placeholder="Your full name">
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Your Email (optional)</label>
@@ -85,7 +86,7 @@
         <textarea name="message" class="form-control" id="message" rows="6" required placeholder="Describe your issue or feedback here..."></textarea>
       </div>
 
-      <!-- Google reCAPTCHA v2 -->
+      <!-- reCAPTCHA Widget -->
       <div class="mb-3">
         <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
       </div>

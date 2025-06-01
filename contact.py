@@ -22,7 +22,9 @@ Message:
 """)
 
     try:
-        with smtplib.SMTP_SSL(os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))) as smtp:
+        with smtplib.SMTP(os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))) as smtp:
+            smtp.ehlo()
+            smtp.starttls()
             smtp.login(os.getenv("SMTP_USERNAME"), os.getenv("SMTP_PASSWORD"))
             smtp.send_message(msg)
             return True

@@ -110,7 +110,7 @@ def contact():
             flash("Please complete the reCAPTCHA.", "danger")
         else:
             # Optional: verify reCAPTCHA server-side
-            """
+            
             import requests
             recaptcha_secret = os.getenv("RECAPTCHA_SECRET_KEY")
             verify_resp = requests.post("https://www.google.com/recaptcha/api/siteverify", data={
@@ -120,7 +120,7 @@ def contact():
             if not verify_resp.get("success"):
                 flash("reCAPTCHA verification failed.", "danger")
                 return render_template("contact.html", recaptcha_site_key=recaptcha_site_key)
-            """
+            
 
             success = send_contact_email(name, email, subject, message)
             if success:
