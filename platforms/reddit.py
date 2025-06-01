@@ -7,20 +7,22 @@ def validate(username):
 def check(username):
     try:
         url = f"https://www.reddit.com/user/{username}/about.json"
-        headers = {"User-Agent": "UsernameChecker/1.0"}
-        response = requests.get(url, headers=headers, timeout=5)
+        headers = {
+            "User-Agent": "Mozilla/5.0 (compatible; username-checker/1.0)"
+        }
+        r = requests.get(url, headers=headers, timeout=5)
 
-        if response.status_code == 200:
-            return {"status": "Taken", "url": f"https://www.reddit.com/user/{username}"}
-        elif response.status_code == 404:
+        if r.status_code == 200:
+            return {"status": "Taken", "url": f"https://www.reddit.com/user/{username}/"}
+        elif r.status_code == 404:
             return {"status": "Available", "url": None}
         else:
-            return {"status": f"Error: {response.status_code}", "url": None}
-    except Exception as e:
-        return {"status": f"Request Failed: {e}", "url": None}
+            return {"status": "Unknown", "url": None}
+    except:
+        return {"status": "Request Failed", "url": None}
 
 reddit_checker = {
     "validate": validate,
     "check": check,
-    "tooltip": "3–20 characters. Letters, numbers, underscores, and hyphens allowed."
+    "tooltip": "3–20 characters. Letters, numbers, hyphens, and underscores only."
 }
