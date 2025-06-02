@@ -12,7 +12,6 @@ def validate(username):
 
 def check(username):
     if not validate(username):
-        print(f"[GitHub] Invalid username format: {username}")
         return {"status": "Invalid", "url": None}
 
     try:
@@ -22,7 +21,6 @@ def check(username):
             "User-Agent": "username-checker"
         }
         r = requests.get(url, headers=headers)
-        print(f"[GitHub] Response code for {username}: {r.status_code}")
 
         if r.status_code == 200:
             return {"status": "Taken", "url": f"https://github.com/{username}"}
@@ -31,7 +29,6 @@ def check(username):
         else:
             return {"status": f"Error: {r.status_code}", "url": None}
     except Exception as e:
-        print(f"[GitHub] Exception: {e}")
         return {"status": "Request Failed", "url": None}
 
 github_checker = {
