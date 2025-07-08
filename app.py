@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash, url_for, send_from_directory
 import os
 import importlib
 import pkgutil
@@ -11,6 +11,11 @@ from contact import send_contact_email
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
+
+# Serve sitemap.xml
+@app.route("/sitemap.xml")
+def sitemap():
+    return send_from_directory(".", "sitemap.xml", mimetype="application/xml")
 
 # Load platform checkers
 platform_checkers = {}
@@ -120,7 +125,6 @@ def contact():
             if not verify_resp.get("success"):
                 flash("reCAPTCHA verification failed.", "danger")
                 return render_template("contact.html", recaptcha_site_key=recaptcha_site_key)
-            
 
             success = send_contact_email(name, email, subject, message)
             if success:
