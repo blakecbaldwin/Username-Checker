@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://usernamescan.com/sitemap.xml
