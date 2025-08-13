@@ -98,6 +98,10 @@ def privacy():
 def terms():
     return render_template("terms.html")
 
+@app.route("/banner")
+def banner():
+    return render_template("birthday-anniversary-banner.html")
+
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
     recaptcha_site_key = os.getenv("RECAPTCHA_SITE_KEY")
