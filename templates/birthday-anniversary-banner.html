@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Birthday & Anniversary Banner</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  .banner {
+    background-color: #0078d4;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-size: 1.2em;
+  }
+</style>
+</head>
+<body>
+<div id="banner" class="banner" style="display:none;"></div>
+
+<script>
+// Example employee data — replace with dynamic data from your system
+const employees = [
+  { name: "Alice", birthday: "08-13", anniversary: "2020-08-13" },
+  { name: "Bob", birthday: "09-01", anniversary: "2018-09-01" }
+];
+
+function checkDates() {
+  const today = new Date();
+  const todayMD = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+  
+  const messages = [];
+
+  employees.forEach(emp => {
+    if (emp.birthday === todayMD) {
+      messages.push(`🎉 Happy Birthday, ${emp.name}!`);
+    }
+    if (emp.anniversary.slice(5) === todayMD) {
+      const years = today.getFullYear() - parseInt(emp.anniversary.slice(0,4));
+      messages.push(`🎊 Happy ${years}-year Anniversary, ${emp.name}!`);
+    }
+  });
+
+  if (messages.length > 0) {
+    document.getElementById("banner").textContent = messages.join("   •   ");
+    document.getElementById("banner").style.display = "block";
+  }
+}
+
+checkDates();
+</script>
+</body>
+</html>
