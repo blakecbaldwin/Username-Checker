@@ -11,20 +11,25 @@
   .banner {
     background-color: #022C69; /* Team color */
     color: #FFFFFF; /* White text */
-    padding: 20px; /* Twice as thick as before */
-    text-align: center;
+    padding: 30px; /* Twice as thick */
     font-size: 1.2em;
     font-weight: bold;
+
+    /* Center text vertically & horizontally */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
   }
 </style>
 </head>
 <body>
-<div id="banner" class="banner" style="display:none;"></div>
+<div id="banner-container"></div>
 
 <script>
 // Example employee data — replace with your own dynamic source
 const employees = [
-  { name: "Alice", birthday: "08-13", anniversary: "2020-08-13" },
+  { name: "Alice", birthday: "08-11", anniversary: "2020-08-11" },
   { name: "Bob", birthday: "09-01", anniversary: "2018-09-01" }
 ];
 
@@ -45,8 +50,10 @@ function checkDates() {
   });
 
   if (messages.length > 0) {
-    document.getElementById("banner").textContent = messages.join("   •   ");
-    document.getElementById("banner").style.display = "block";
+    const banner = document.createElement("div");
+    banner.className = "banner";
+    banner.textContent = messages.join("   •   ");
+    document.getElementById("banner-container").appendChild(banner);
   }
 }
 
