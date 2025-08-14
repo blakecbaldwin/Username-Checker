@@ -6,14 +6,15 @@
 <style>
   body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: Helvetica, Arial, sans-serif;
   }
   .banner {
-    background-color: #0078d4;
-    color: white;
-    padding: 10px;
+    background-color: #022C69; /* Team color */
+    color: #FFFFFF; /* White text */
+    padding: 20px; /* Twice as thick as before */
     text-align: center;
     font-size: 1.2em;
+    font-weight: bold;
   }
 </style>
 </head>
@@ -21,7 +22,7 @@
 <div id="banner" class="banner" style="display:none;"></div>
 
 <script>
-// Example employee data — replace with dynamic data from your system
+// Example employee data — replace with your own dynamic source
 const employees = [
   { name: "Alice", birthday: "08-13", anniversary: "2020-08-13" },
   { name: "Bob", birthday: "09-01", anniversary: "2018-09-01" }
@@ -35,11 +36,11 @@ function checkDates() {
 
   employees.forEach(emp => {
     if (emp.birthday === todayMD) {
-      messages.push(`🎉 Happy Birthday, ${emp.name}!`);
+      messages.push(`Happy Birthday, ${emp.name}!`);
     }
     if (emp.anniversary.slice(5) === todayMD) {
       const years = today.getFullYear() - parseInt(emp.anniversary.slice(0,4));
-      messages.push(`🎊 Happy ${years}-year Anniversary, ${emp.name}!`);
+      messages.push(`Happy ${years}-year Anniversary, ${emp.name}!`);
     }
   });
 
