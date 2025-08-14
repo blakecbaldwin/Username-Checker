@@ -100,7 +100,8 @@
 <div id="banner-root"></div>
 
 <script>
-const JSON_URL = "/static/celebrations.json";
+// IMPORTANT: now using backend route, not a public static file
+const JSON_URL = "/celebrations-data";
 const AUTO_SECONDS = 15;
 
 function buildCards(people) {
@@ -152,8 +153,9 @@ function buildCards(people) {
 }
 
 async function loadPeople() {
+  // still add a cache-busting param so browsers don’t over-cache the route
   const res = await fetch(JSON_URL + "?v=" + Date.now(), { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to load celebrations.json");
+  if (!res.ok) throw new Error("Failed to load celebrations data");
   return res.json();
 }
 
@@ -250,21 +252,20 @@ function renderCarousel(cards) {
       d.className = "dot" + (i === 0 ? " active" : "");
       dots.appendChild(d);
     }
+    banner.appendChild(dots);
 
-    // Pause on hover/focus, resume when leaving
+    // Pause on hover/focus
     banner.addEventListener("mouseenter", pauseAuto);
     banner.addEventListener("mouseleave", resetAuto);
     banner.addEventListener("focusin", pauseAuto);
     banner.addEventListener("focusout", resetAuto);
-
-    banner.appendChild(dots);
   }
 
   banner.appendChild(viewport);
   document.getElementById("banner-root").appendChild(banner);
 
-  update();     // initial position
-  resetAuto();  // start auto-advance if more than one
+  update();
+  resetAuto();
 }
 
 async function init() {
@@ -273,7 +274,7 @@ async function init() {
     const cards = buildCards(people);
     renderCarousel(cards);
   } catch (e) {
-    // Silent fail keeps iframe empty if JSON can't load
+    // Silent fail keeps iframe empty if data can't load
     console.error(e);
   }
 }

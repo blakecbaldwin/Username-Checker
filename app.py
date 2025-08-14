@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, flash, url_for, send_from_directory
+from flask import Flask, render_template, request, redirect, flash, url_for, send_from_directory, jsonify, abort
 import os
 import importlib
 import pkgutil
 import time
+import json
 from dotenv import load_dotenv
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
@@ -11,6 +12,47 @@ from contact import send_contact_email
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "fallback-secret")
+
+# === Celebrations data (Render Secret File) ===
+# Path where Render mounts the secret file
+SECRET_JSON_PATH = os.getenv("CELEBRATIONS_JSON_PATH", "/etc/secrets/celebrations.json")
+# Optional: require a token to read the data (set BANNER_TOKEN in Render env)
+BANNER_TOKEN = os.getenv("BANNER_TOKEN")
+
+def _read_celebrations_json():
+    if not os.path.exists(SECRET_JSON_PATH):
+        return []
+    with open(SECRET_JSON_PATH, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    # Fail-safe: ensure list of dicts and only expose expected keys
+    safe = []
+    for row in data if isinstance(data, list) else []:
+        if isinstance(row, dict):
+            safe.append({
+                "name": row.get("name"),
+                "email": row.get("email"),
+                "birthday": row.get("birthday"),
+                "anniversary": row.get("anniversary"),
+            })
+    return safe
+
+@app.route("/celebrations-data")
+def celebrations_data():
+    # Optional token check
+    if BANNER_TOKEN:
+        if request.args.get("token") != BANNER_TOKEN:
+            abort(403)
+
+    try:
+        payload = _read_celebrations_json()
+        resp = jsonify(payload)
+        # No-store so browsers don’t cache sensitive data
+        resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        resp.headers["Pragma"] = "no-cache"
+        return resp
+    except Exception:
+        # Don’t leak errors; just return empty
+        return jsonify([]), 200
 
 # Serve sitemap.xml
 @app.route("/sitemap.xml")
@@ -119,7 +161,6 @@ def contact():
             flash("Please complete the reCAPTCHA.", "danger")
         else:
             # Optional: verify reCAPTCHA server-side
-            
             import requests
             recaptcha_secret = os.getenv("RECAPTCHA_SECRET_KEY")
             verify_resp = requests.post("https://www.google.com/recaptcha/api/siteverify", data={
