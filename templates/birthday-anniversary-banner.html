@@ -4,60 +4,281 @@
 <meta charset="UTF-8">
 <title>Birthday & Anniversary Banner</title>
 <style>
-  body {
-    margin: 0;
-    font-family: Helvetica, Arial, sans-serif;
-  }
-  .banner {
-    background-color: #022C69; /* Team color */
-    color: #FFFFFF; /* White text */
-    padding: 30px; /* Twice as thick */
-    font-size: 1.2em;
-    font-weight: bold;
+  :root { --bg:#16478E; --fg:#FFFFFF; }
+  html, body { margin:0; background:transparent; }
+  body { font-family: Helvetica, Arial, sans-serif; }
 
-    /* Center text vertically & horizontally */
+  .banner {
+    background-color: var(--bg);
+    color: var(--fg);
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
     display: flex;
     justify-content: center;
     align-items: center;
+    min-height: 72px;
+  }
+
+  /* Arrows are positioned relative to this box (so they stay near the text) */
+  .viewport {
+    position: relative;
+    width: 100%;
+    max-width: 960px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .track {
+    display: flex;
+    transition: transform 250ms ease; /* animate slide moves */
+    will-change: transform;
+  }
+
+  .card {
+    flex: 0 0 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
   }
+
+  .heading {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 0;
+  }
+  .subheading {
+    font-size: 1em;
+    font-weight: bold;
+    margin: 6px 0 0 0;
+  }
+  .subheading a {
+    color: var(--fg);
+    text-decoration: underline;
+  }
+  .subheading a:hover,
+  .subheading a:focus {
+    opacity: 0.85;
+    outline: none;
+  }
+
+  /* Arrows INSIDE the viewport, close to the text */
+  .arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 0;
+    background: rgba(255,255,255,0.18);
+    color: var(--fg);
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    padding: 0;
+  }
+  .arrow:hover,
+  .arrow:focus {
+    background: rgba(255,255,255,0.28);
+    outline: none;
+  }
+  .prev { left: 8px; }
+  .next { right: 8px; }
+  .chev { font-size: 18px; line-height: 1; user-select: none; }
+
+  /* Dots are optional (hidden by default) */
+  .dots { display:none; gap:6px; position:absolute; bottom:6px; left:0; right:0; justify-content:center; }
+  .dot { width:6px; height:6px; border-radius:999px; background:rgba(255,255,255,0.35); }
+  .dot.active { background:#FFFFFF; }
 </style>
 </head>
 <body>
-<div id="banner-container"></div>
+<div id="banner-root"></div>
 
 <script>
-// Example employee data — replace with your own dynamic source
-const employees = [
-  { name: "Alice", birthday: "08-13", anniversary: "2020-08-13" },
-  { name: "Bob", birthday: "09-01", anniversary: "2018-09-01" }
-];
+const JSON_URL = "/static/celebrations.json";
+const AUTO_SECONDS = 15;
 
-function checkDates() {
+function buildCards(people) {
   const today = new Date();
-  const todayMD = `${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
-  
-  const messages = [];
+  const yyyy = String(today.getFullYear());
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  const todayYMD = `${yyyy}-${mm}-${dd}`;
+  const todayMD  = `${mm}-${dd}`;
 
-  employees.forEach(emp => {
-    if (emp.birthday === todayMD) {
-      messages.push(`Happy Birthday, ${emp.name}!`);
+  const cards = [];
+
+  (people || []).forEach(p => {
+    const name = p.name || "Team Member";
+    const email = p.email || "";
+    const teamsUrl = email ? `https://teams.microsoft.com/l/chat/0/0?users=${encodeURIComponent(email)}` : null;
+
+    // Birthday
+    if (p.birthday && p.birthday === todayMD) {
+      cards.push({
+        heading: `Today is ${name}'s birthday!`,
+        subheading: `Wish ${name} a happy birthday`,
+        url: teamsUrl
+      });
     }
-    if (emp.anniversary.slice(5) === todayMD) {
-      const years = today.getFullYear() - parseInt(emp.anniversary.slice(0,4));
-      messages.push(`Happy ${years}-year Anniversary, ${emp.name}!`);
+
+    // Anniversary or First Day
+    if (p.anniversary && typeof p.anniversary === "string" && p.anniversary.length >= 10) {
+      const annYMD = p.anniversary.slice(0, 10);
+      const annMD  = p.anniversary.slice(5);
+      if (annYMD === todayYMD) {
+        cards.push({
+          heading: `Welcome to the team, ${name}!`,
+          subheading: `Congratulate ${name} and welcome them to the team`,
+          url: teamsUrl
+        });
+      } else if (annMD === todayMD) {
+        const years = Math.max(0, today.getFullYear() - parseInt(p.anniversary.slice(0, 4), 10));
+        cards.push({
+          heading: `Today is ${name}'s ${years}-year anniversary!`,
+          subheading: `Congratulate ${name} on ${years} years with us`,
+          url: teamsUrl
+        });
+      }
     }
   });
 
-  if (messages.length > 0) {
-    const banner = document.createElement("div");
-    banner.className = "banner";
-    banner.textContent = messages.join("   •   ");
-    document.getElementById("banner-container").appendChild(banner);
+  return cards;
+}
+
+async function loadPeople() {
+  const res = await fetch(JSON_URL + "?v=" + Date.now(), { cache: "no-store" });
+  if (!res.ok) throw new Error("Failed to load celebrations.json");
+  return res.json();
+}
+
+function renderCarousel(cards) {
+  if (!cards.length) return; // render nothing if no matches
+
+  const banner = document.createElement("div");
+  banner.className = "banner";
+
+  const viewport = document.createElement("div");
+  viewport.className = "viewport";
+
+  const track = document.createElement("div");
+  track.className = "track";
+  viewport.appendChild(track);
+
+  // Slides
+  cards.forEach(c => {
+    const slide = document.createElement("section");
+    slide.className = "card";
+
+    const h = document.createElement("h1");
+    h.className = "heading";
+    h.textContent = c.heading;
+
+    const sh = document.createElement("p");
+    sh.className = "subheading";
+    if (c.url) {
+      const a = document.createElement("a");
+      a.href = c.url;
+      a.target = "_blank";
+      a.rel = "noopener";
+      a.textContent = c.subheading;
+      sh.appendChild(a);
+    } else {
+      sh.textContent = c.subheading;
+    }
+
+    slide.appendChild(h);
+    slide.appendChild(sh);
+    track.appendChild(slide);
+  });
+
+  const total = cards.length;
+  track.style.width = `${100 * total}%`;
+
+  let index = 0;
+  let autoTimer = null;
+
+  function update() {
+    track.style.transform = `translateX(${-100 * index}%)`;
+
+    const dotEls = dots?.querySelectorAll(".dot") || [];
+    dotEls.forEach((el, i) => el.classList.toggle("active", i === index));
+  }
+
+  function loopPrev() {
+    index = (index - 1 + total) % total; // wrap
+    update();
+  }
+  function loopNext() {
+    index = (index + 1) % total; // wrap
+    update();
+  }
+  function resetAuto() {
+    if (autoTimer) clearInterval(autoTimer);
+    if (total > 1) autoTimer = setInterval(loopNext, AUTO_SECONDS * 1000);
+  }
+  function pauseAuto() {
+    if (autoTimer) clearInterval(autoTimer);
+  }
+
+  // Only add arrows and dots if multiple slides
+  let dots;
+  if (total > 1) {
+    const prev = document.createElement("button");
+    prev.className = "arrow prev";
+    prev.innerHTML = `<span class="chev">‹</span>`;
+
+    const next = document.createElement("button");
+    next.className = "arrow next";
+    next.innerHTML = `<span class="chev">›</span>`;
+
+    prev.addEventListener("click", () => { loopPrev(); resetAuto(); });
+    next.addEventListener("click", () => { loopNext(); resetAuto(); });
+
+    viewport.appendChild(prev);
+    viewport.appendChild(next);
+
+    dots = document.createElement("div");
+    dots.className = "dots";
+    for (let i = 0; i < total; i++) {
+      const d = document.createElement("div");
+      d.className = "dot" + (i === 0 ? " active" : "");
+      dots.appendChild(d);
+    }
+
+    // Pause on hover/focus, resume when leaving
+    banner.addEventListener("mouseenter", pauseAuto);
+    banner.addEventListener("mouseleave", resetAuto);
+    banner.addEventListener("focusin", pauseAuto);
+    banner.addEventListener("focusout", resetAuto);
+
+    banner.appendChild(dots);
+  }
+
+  banner.appendChild(viewport);
+  document.getElementById("banner-root").appendChild(banner);
+
+  update();     // initial position
+  resetAuto();  // start auto-advance if more than one
+}
+
+async function init() {
+  try {
+    const people = await loadPeople();
+    const cards = buildCards(people);
+    renderCarousel(cards);
+  } catch (e) {
+    // Silent fail keeps iframe empty if JSON can't load
+    console.error(e);
   }
 }
 
-checkDates();
+init();
 </script>
 </body>
 </html>
