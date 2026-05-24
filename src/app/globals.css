@@ -99,11 +99,35 @@ button {
   width: min(56rem, 82vw);
   height: min(56rem, 82vw);
   border-radius: 9999px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.13), rgba(173, 198, 255, 0.055) 42%, transparent 72%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.09), rgba(173, 198, 255, 0.04) 42%, transparent 72%);
   filter: blur(52px);
-  opacity: 0.62;
+  opacity: 0.5;
   transform: translate(-50%, -50%);
   animation: center-glow-pulse 11s ease-in-out infinite;
+}
+
+.cosmic-color-glow {
+  position: absolute;
+  width: min(42rem, 72vw);
+  height: min(42rem, 72vw);
+  border-radius: 9999px;
+  filter: blur(96px);
+  opacity: 0.16;
+  mix-blend-mode: screen;
+  animation: color-glow-drift 18s ease-in-out infinite;
+}
+
+.cosmic-color-glow-blue {
+  top: -18rem;
+  left: -16rem;
+  background: radial-gradient(circle, rgba(77, 142, 255, 0.62), transparent 70%);
+}
+
+.cosmic-color-glow-green {
+  right: -18rem;
+  bottom: -18rem;
+  background: radial-gradient(circle, rgba(78, 222, 163, 0.42), transparent 72%);
+  animation-delay: -8s;
 }
 
 .cosmic-star {
@@ -1383,13 +1407,26 @@ button {
 @keyframes center-glow-pulse {
   0%,
   100% {
-    opacity: 0.48;
+    opacity: 0.36;
     transform: translate(-50%, -50%) scale(0.96);
   }
 
   50% {
-    opacity: 0.72;
+    opacity: 0.54;
     transform: translate(-50%, -50%) scale(1.04);
+  }
+}
+
+@keyframes color-glow-drift {
+  0%,
+  100% {
+    opacity: 0.11;
+    transform: translate3d(0, 0, 0) scale(0.96);
+  }
+
+  50% {
+    opacity: 0.18;
+    transform: translate3d(22px, 16px, 0) scale(1.05);
   }
 }
 

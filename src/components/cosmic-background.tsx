@@ -36,6 +36,8 @@ function starStyle(index: number): StarStyle {
 export function CosmicBackground() {
   return (
     <div className="cosmic-background" aria-hidden="true">
+      <span className="cosmic-color-glow cosmic-color-glow-blue" />
+      <span className="cosmic-color-glow cosmic-color-glow-green" />
       {Array.from({ length: 130 }, (_, index) => (
         <span key={index} className="cosmic-star" style={starStyle(index + 1)} />
       ))}
