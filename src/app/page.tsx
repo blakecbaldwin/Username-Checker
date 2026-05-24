@@ -1,18 +1,17 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { BadgeCheck, CheckCircle2, Code2, Edit3, Globe2, ShieldCheck, Telescope } from "lucide-react";
+import { CosmicBackground } from "@/components/cosmic-background";
 import { SearchInterface } from "@/components/search-interface";
-import { getActivePlatforms, platformRegistry } from "@/lib/platforms";
+import { getActivePlatforms } from "@/lib/platforms";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ username?: string }> }) {
   const params = await searchParams;
   const activePlatforms = getActivePlatforms();
-  const researchCount = platformRegistry.length - activePlatforms.length;
 
   return (
     <main className="page-shell">
-      <div className="cosmic-background" aria-hidden="true" />
-      <div className="ambient-glow" aria-hidden="true" />
+      <CosmicBackground />
 
       <header className="container">
         <nav className="site-nav">
@@ -31,8 +30,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ u
             <div>
               <h1 className="hero-title">UsernameScan</h1>
               <p className="hero-subtitle">
-                Search across <strong>{activePlatforms.length} active reliability-first checks</strong>, with{" "}
-                {researchCount} more platforms under review.
+                Search across reliable social, creator, and gaming platforms.
               </p>
             </div>
           </div>
@@ -54,7 +52,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ u
                 <Telescope size={22} />
               </div>
               <strong>2. Scan Platforms</strong>
-              <p>Check reliable APIs first.</p>
+              <p>Check supported sources.</p>
             </div>
             <div className="how-card">
               <div className="how-icon" style={{ color: "#c0c1ff" }}>
@@ -67,9 +65,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ u
         </section>
 
         <section className="platform-strip" aria-label="Platform summary">
-          <span className="platform-strip-label">
-            Checking active platforms, researching requested additions
-          </span>
+          <span className="platform-strip-label">Reliability-first platform checks</span>
           <div className="platform-strip-items">
             <span className="platform-strip-item">
               <Globe2 size={22} /> Global

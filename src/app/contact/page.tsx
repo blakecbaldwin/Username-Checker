@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CosmicBackground } from "@/components/cosmic-background";
 import { ContactForm } from "@/components/contact-form";
 
 export const metadata: Metadata = {
@@ -10,8 +11,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <main className="page-shell contact-page">
-      <div className="cosmic-background" aria-hidden="true" />
-      <div className="ambient-glow" aria-hidden="true" />
+      <CosmicBackground />
 
       <header className="contact-nav-shell">
         <nav className="contact-nav">

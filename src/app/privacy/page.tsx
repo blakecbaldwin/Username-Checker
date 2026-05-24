@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CheckCircle2, Cookie, Database, ExternalLink, ShieldCheck } from "lucide-react";
+import { CosmicBackground } from "@/components/cosmic-background";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -10,8 +11,7 @@ export const metadata: Metadata = {
 export default function PrivacyPage() {
   return (
     <main className="page-shell legal-page">
-      <div className="cosmic-background" aria-hidden="true" />
-      <div className="ambient-glow" aria-hidden="true" />
+      <CosmicBackground />
 
       <header className="legal-nav-shell">
         <nav className="legal-nav">

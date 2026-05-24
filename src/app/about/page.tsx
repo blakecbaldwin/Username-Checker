@@ -13,7 +13,7 @@ import {
   ShieldCheck,
   Sparkles,
 } from "lucide-react";
-import { getActivePlatforms, platformRegistry } from "@/lib/platforms";
+import { CosmicBackground } from "@/components/cosmic-background";
 
 export const metadata: Metadata = {
   title: "About",
@@ -21,13 +21,9 @@ export const metadata: Metadata = {
 };
 
 export default function AboutPage() {
-  const activePlatforms = getActivePlatforms();
-  const researchCount = platformRegistry.length - activePlatforms.length;
-
   return (
     <main className="page-shell about-page">
-      <div className="cosmic-background" aria-hidden="true" />
-      <div className="ambient-glow" aria-hidden="true" />
+      <CosmicBackground />
 
       <header className="about-nav-shell">
         <nav className="about-nav">
@@ -63,10 +59,7 @@ export default function AboutPage() {
             <DatabaseZap size={30} />
           </div>
           <h2>2. Scan</h2>
-          <p>
-            We query {activePlatforms.length} active reliability-first checks and keep scraper-heavy sources out of the
-            default path.
-          </p>
+          <p>We query supported sources with conservative checks and clear status labels.</p>
         </article>
         <article className="glass-panel about-card">
           <div className="about-card-icon">
@@ -92,7 +85,7 @@ export default function AboutPage() {
             </li>
             <li>
               <Network size={22} />
-              <span>{researchCount} requested platforms are tracked for safer future support</span>
+              <span>Requested platforms are tracked for safer future support</span>
             </li>
             <li>
               <BarChart3 size={22} />
@@ -136,8 +129,8 @@ export default function AboutPage() {
               <CheckCircle2 size={18} />
             </summary>
             <p>
-              UsernameScan currently runs {activePlatforms.length} active checks. Additional requested platforms are
-              documented as research until they have a safer lookup path.
+              UsernameScan focuses on supported checks that can return useful availability signals. Additional requested
+              platforms are evaluated before they are added.
             </p>
           </details>
           <details className="glass-panel about-detail">
