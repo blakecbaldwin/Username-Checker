@@ -1,6 +1,8 @@
 import re
 import requests
 
+REQUEST_TIMEOUT = (2, 4)
+
 def validate(username):
     return re.fullmatch(r"[a-zA-Z0-9_]{3,20}", username) is not None
 
@@ -9,7 +11,9 @@ def check(username):
         url = "https://users.roblox.com/v1/usernames/users"
         headers = {"Content-Type": "application/json"}
         payload = {"usernames": [username], "excludeBannedUsers": False}
-        r = requests.post(url, json=payload, headers=headers)
+        r = requests.post(url, json=payload, headers=headers, timeout=REQUEST_TIMEOUT)
+        if r.status_code in (403, 429):
+            return {"status": f"Unknown ({r.status_code})", "url": None}
         data = r.json()
         if data.get("data"):
             return {"status": "Taken", "url": f"https://www.roblox.com/users/profile?username={username}"}

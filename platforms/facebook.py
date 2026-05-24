@@ -1,6 +1,8 @@
 import re
 import requests
 
+REQUEST_TIMEOUT = (2, 4)
+
 def validate(username):
     return re.fullmatch(r"[a-zA-Z0-9\.]{5,50}", username) is not None
 
@@ -8,9 +10,12 @@ def check(username):
     try:
         url = f"https://www.facebook.com/{username}"
         headers = {"User-Agent": "Mozilla/5.0"}
-        r = requests.get(url, headers=headers, timeout=5, allow_redirects=True)
+        r = requests.get(url, headers=headers, timeout=REQUEST_TIMEOUT, allow_redirects=True)
         final_url = r.url.lower()
         html = r.text.lower()
+
+        if r.status_code in (403, 429):
+            return {"status": f"Unknown ({r.status_code})", "url": None}
 
         # Case: clearly not found or invalid page
         if r.status_code == 404 or "content isn't available" in html or "page isn't available" in html:

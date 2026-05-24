@@ -69,21 +69,22 @@
     </ul>
 
     <form method="POST" action="{{ url_for('contact') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="mb-3">
         <label for="name" class="form-label">Your Name</label>
-        <input type="text" name="name" class="form-control" id="name" required placeholder="Your full name">
+        <input type="text" name="name" class="form-control" id="name" required maxlength="100" placeholder="Your full name">
       </div>
       <div class="mb-3">
         <label for="email" class="form-label">Your Email (optional)</label>
-        <input type="email" name="email" class="form-control" id="email" placeholder="you@example.com">
+        <input type="email" name="email" class="form-control" id="email" maxlength="254" placeholder="you@example.com">
       </div>
       <div class="mb-3">
         <label for="subject" class="form-label">Subject</label>
-        <input type="text" name="subject" class="form-control" id="subject" required placeholder="Bug report, feedback, etc.">
+        <input type="text" name="subject" class="form-control" id="subject" required maxlength="150" placeholder="Bug report, feedback, etc.">
       </div>
       <div class="mb-3">
         <label for="message" class="form-label">Message</label>
-        <textarea name="message" class="form-control" id="message" rows="6" required placeholder="Describe your issue or feedback here..."></textarea>
+        <textarea name="message" class="form-control" id="message" rows="6" required maxlength="4000" placeholder="Describe your issue or feedback here..."></textarea>
       </div>
 
       <!-- reCAPTCHA Widget -->

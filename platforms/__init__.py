@@ -3,6 +3,7 @@ import importlib
 
 platform_checkers = {}
 tooltips = {}
+ACTIVE_PLATFORM_MODULES = {"github", "minecraft", "reddit", "roblox", "steam", "twitch"}
 
 # Get current directory (platforms/)
 current_dir = os.path.dirname(__file__)
@@ -11,6 +12,9 @@ current_dir = os.path.dirname(__file__)
 for filename in os.listdir(current_dir):
     if filename.endswith(".py") and filename != "__init__.py":
         module_name = filename[:-3]
+        if module_name not in ACTIVE_PLATFORM_MODULES:
+            continue
+
         module = importlib.import_module(f".{module_name}", package=__name__)
 
         checker_name = f"{module_name}_checker"

@@ -7,6 +7,7 @@ import time
 load_dotenv()
 CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 CLIENT_SECRET = os.getenv("TWITCH_CLIENT_SECRET")
+REQUEST_TIMEOUT = (2, 4)
 
 # Cache token with expiration
 _cached_token = None
@@ -20,12 +21,15 @@ def get_token():
     if _cached_token and time.time() < _token_expiry:
         return _cached_token
 
+    if not CLIENT_ID or not CLIENT_SECRET:
+        return None
+
     try:
         r = requests.post("https://id.twitch.tv/oauth2/token", params={
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
             "grant_type": "client_credentials"
-        })
+        }, timeout=REQUEST_TIMEOUT)
         data = r.json()
         _cached_token = data.get("access_token")
         expires_in = data.get("expires_in", 3600)  # default 1 hour
@@ -43,7 +47,9 @@ def check(username):
             "Client-ID": CLIENT_ID,
             "Authorization": f"Bearer {token}"
         }
-        r = requests.get("https://api.twitch.tv/helix/users", headers=headers, params={"login": username})
+        r = requests.get("https://api.twitch.tv/helix/users", headers=headers, params={"login": username}, timeout=REQUEST_TIMEOUT)
+        if r.status_code in (403, 429):
+            return {"status": f"Unknown ({r.status_code})", "url": None}
         if r.json().get("data"):
             return {"status": "Taken", "url": f"https://www.twitch.tv/{username}"}
         else:

@@ -5,11 +5,34 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+REQUIRED_SMTP_ENV_VARS = [
+    "SMTP_SERVER",
+    "SMTP_PORT",
+    "SMTP_USERNAME",
+    "SMTP_PASSWORD",
+    "SMTP_FROM_EMAIL",
+    "SMTP_TO_EMAIL",
+]
+
+
+def _smtp_config():
+    config = {name: os.getenv(name) for name in REQUIRED_SMTP_ENV_VARS}
+    missing = [name for name, value in config.items() if not value]
+    if missing:
+        print("Contact email blocked: missing SMTP configuration")
+        return None
+    return config
+
+
 def send_contact_email(name, email, subject, message):
+    config = _smtp_config()
+    if not config:
+        return False
+
     msg = EmailMessage()
     msg["Subject"] = f"Contact Form: {subject}"
-    msg["From"] = os.getenv("SMTP_FROM_EMAIL")
-    msg["To"] = os.getenv("SMTP_TO_EMAIL")
+    msg["From"] = config["SMTP_FROM_EMAIL"]
+    msg["To"] = config["SMTP_TO_EMAIL"]
     msg.set_content(f"""
 You received a new contact form submission:
 
@@ -22,12 +45,12 @@ Message:
 """)
 
     try:
-        with smtplib.SMTP(os.getenv("SMTP_SERVER"), int(os.getenv("SMTP_PORT"))) as smtp:
+        with smtplib.SMTP(config["SMTP_SERVER"], int(config["SMTP_PORT"]), timeout=10) as smtp:
             smtp.ehlo()
             smtp.starttls()
-            smtp.login(os.getenv("SMTP_USERNAME"), os.getenv("SMTP_PASSWORD"))
+            smtp.login(config["SMTP_USERNAME"], config["SMTP_PASSWORD"])
             smtp.send_message(msg)
             return True
     except Exception as e:
-        print("Failed to send contact email:", e)
+        print(f"Failed to send contact email: {e.__class__.__name__}")
         return False

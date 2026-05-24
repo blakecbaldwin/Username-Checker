@@ -1,15 +1,19 @@
 import re
 import requests
 
+REQUEST_TIMEOUT = (2, 4)
+
 def validate(username):
     return re.fullmatch(r"[a-zA-Z0-9_]{1,30}", username) is not None
 
 def check(username):
     try:
         url = f"https://www.youtube.com/@{username}"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"})
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=REQUEST_TIMEOUT)
         if r.status_code == 200:
             return {"status": "Taken", "url": url}
+        elif r.status_code in (403, 429):
+            return {"status": f"Unknown ({r.status_code})", "url": None}
         else:
             return {"status": "Available", "url": None}
     except:
