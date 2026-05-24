@@ -103,7 +103,7 @@ export function SearchInterface({ initialUsername, platforms }: Props) {
 
       <div className="search-note">
         <ShieldCheck size={16} />
-        <span>{platforms.length} active reliability-first checks. Scraper-heavy platforms are held for research.</span>
+        <span>Clear availability checks with reliability labels.</span>
       </div>
 
       {error ? <div className="search-error">{error}</div> : null}
