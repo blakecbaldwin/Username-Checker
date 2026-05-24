@@ -1,5 +1,3 @@
-# Username Scan
-
-Check username availability across reliable social, creator, and gaming platforms.
-
-This branch is migrating the app from Flask/Render to Next.js/Vercel.
+# Username-Checker
+Check the availability of a username across multiple different platforms.
+View it online at https://usernamescan.com/
