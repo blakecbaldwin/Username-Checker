@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f7f4;
+  --foreground: #151716;
+  --muted: #626862;
+  --panel: #ffffff;
+  --panel-strong: #f0f3ef;
+  --border: #d9ded7;
+  --accent: #0b7a75;
+  --accent-strong: #075f5c;
+  --danger: #b42318;
+  --success: #157347;
+  --warning: #b76e00;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #101312;
+    --foreground: #f4f6f3;
+    --muted: #a2aaa2;
+    --panel: #191d1b;
+    --panel-strong: #202622;
+    --border: #303932;
+    --accent: #41c5bc;
+    --accent-strong: #74ded7;
+    --danger: #ff8a80;
+    --success: #70d795;
+    --warning: #f6c15f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.page-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.ad-slot {
+  min-height: 96px;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  background: var(--panel-strong);
+  font-size: 0.875rem;
+}

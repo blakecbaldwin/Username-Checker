@@ -1,3 +1,11 @@
 .env
+.env.local
 __pycache__/
 *.pyc
+node_modules/
+.next/
+out/
+dev.log
+start.log
+.next-dev.log
+.next-dev.err.log
