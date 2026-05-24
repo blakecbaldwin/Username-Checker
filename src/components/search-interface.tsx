@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, ShieldCheck } from "lucide-react";
+import { AtSign, LoaderCircle, Search, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import type { CheckResult, PlatformDefinition } from "@/lib/platforms";
@@ -11,14 +11,20 @@ type Props = {
 };
 
 function statusColor(status: CheckResult["status"]) {
-  if (status === "available") return "var(--success)";
-  if (status === "taken") return "var(--danger)";
-  if (status === "invalid" || status === "auth_failed") return "var(--warning)";
-  return "var(--muted)";
+  if (status === "available") return "available";
+  if (status === "taken") return "taken";
+  return "other";
 }
 
 function statusLabel(status: CheckResult["status"]) {
   return status.replace("_", " ");
+}
+
+function resultDetail(item: CheckResult) {
+  if (item.reason) return item.reason;
+  if (item.status === "available") return "No matching profile found from the active check.";
+  if (item.status === "taken") return "Matching profile found.";
+  return item.reliability.replace("_", " ");
 }
 
 export function SearchInterface({ initialUsername, platforms }: Props) {
@@ -65,80 +71,71 @@ export function SearchInterface({ initialUsername, platforms }: Props) {
   }, []);
 
   return (
-    <section className="panel" style={{ padding: 18, display: "grid", gap: 18 }}>
+    <section className="search-panel">
       <form
         onSubmit={(event) => {
           event.preventDefault();
           void runSearch();
         }}
-        style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}
+        className="glass-panel search-form"
       >
+        <div className="search-input-icon">
+          <AtSign size={24} />
+        </div>
         <input
           value={username}
           onChange={(event) => setUsername(event.target.value)}
           maxLength={50}
           placeholder="Enter a username..."
           aria-label="Username"
-          style={{
-            minWidth: 0,
-            border: "1px solid var(--border)",
-            borderRadius: 8,
-            padding: "13px 14px",
-            background: "var(--panel-strong)",
-            color: "var(--foreground)",
-          }}
+          spellCheck={false}
+          className="search-input"
         />
         <button
           type="submit"
           disabled={loading}
-          style={{
-            border: 0,
-            borderRadius: 8,
-            padding: "0 16px",
-            background: "var(--accent)",
-            color: "white",
-            cursor: "pointer",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            minHeight: 48,
-          }}
+          className="scan-button scan-gradient"
         >
-          <Search size={18} />
-          {loading ? "Checking" : "Check"}
+          <span>{loading ? "Scanning" : "Scan"}</span>
+          {loading ? <LoaderCircle className="spin" size={18} /> : <Search size={18} />}
         </button>
       </form>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--muted)", fontSize: 14 }}>
+      <div className="search-note">
         <ShieldCheck size={16} />
         <span>{platforms.length} active reliability-first checks. Scraper-heavy platforms are held for research.</span>
       </div>
 
-      {error ? <div style={{ color: "var(--danger)" }}>{error}</div> : null}
+      {error ? <div className="search-error">{error}</div> : null}
 
       {results.length ? (
-        <div style={{ display: "grid", gap: 10 }}>
-          {results.map((item) => {
+        <div className="results-grid">
+          {results.map((item, index) => {
             const platform = platformMap.get(item.platform);
+            const statusClass = statusColor(item.status);
             return (
               <article
                 key={item.platform}
-                className="panel"
-                style={{ padding: 14, display: "grid", gridTemplateColumns: "auto 1fr auto", alignItems: "center", gap: 12 }}
+                className={`glass-panel result-card ${statusClass}`}
+                style={{ animationDelay: `${index * 70}ms` }}
               >
-                {platform ? <Image src={platform.icon} alt="" width={28} height={28} /> : null}
-                <div style={{ display: "grid", gap: 2 }}>
-                  <strong>{platform?.name ?? item.platform}</strong>
-                  <span style={{ color: "var(--muted)", fontSize: 13 }}>{item.reason || item.reliability.replace("_", " ")}</span>
+                <div className="result-card-header">
+                  <div className="result-platform">
+                    {platform ? <Image src={platform.icon} alt="" width={24} height={24} /> : null}
+                    <span>{platform?.name ?? item.platform}</span>
+                  </div>
+                  <span className={`result-badge ${statusClass}`}>{statusLabel(item.status)}</span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  {item.profileUrl ? (
-                    <a href={item.profileUrl} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
-                      View
-                    </a>
-                  ) : null}
-                  <strong style={{ color: statusColor(item.status), textTransform: "capitalize" }}>{statusLabel(item.status)}</strong>
-                </div>
+                <div className="result-detail">{resultDetail(item)}</div>
+                {item.profileUrl ? (
+                  <a href={item.profileUrl} target="_blank" rel="noreferrer" className="result-action view">
+                    View Profile
+                  </a>
+                ) : item.status === "available" ? (
+                  <span className="result-action">Available</span>
+                ) : (
+                  <span className="result-action view">No Link</span>
+                )}
               </article>
             );
           })}

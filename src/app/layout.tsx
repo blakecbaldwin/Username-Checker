@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     template: "%s | Username Scan",
   },
   description: "Check username availability across reliable social, creator, and gaming platforms.",
+  icons: {
+    icon: "/img/usernamescan.svg",
+  },
   openGraph: {
     title: "Username Scan",
     description: "Check username availability across reliable social, creator, and gaming platforms.",
