@@ -89,19 +89,19 @@ Active checks:
 - Twitch
 - Bluesky
 - Tumblr
+- Kick
+- YouTube
+- SoundCloud
 
 Requested or disabled checks:
 
-- Kick
 - Xbox
 - PlayStation
 - Facebook
 - Instagram
 - Pinterest
 - Snapchat
-- SoundCloud
 - TikTok
-- YouTube
 
 Scraper-heavy platforms should remain inactive until there is a reliable and policy-safe implementation.
 
@@ -117,7 +117,6 @@ TWITCH_CLIENT_ID
 TWITCH_CLIENT_SECRET
 REDDIT_CLIENT_ID
 REDDIT_CLIENT_SECRET
-TUMBLR_CONSUMER_KEY
 SMTP_SERVER
 SMTP_PORT
 SMTP_USERNAME
@@ -130,13 +129,15 @@ Optional:
 
 ```text
 GITHUB_TOKEN
+TUMBLR_CONSUMER_KEY
 NEXT_PUBLIC_ADSENSE_CLIENT
 ```
 
 Notes:
 
 - `GITHUB_TOKEN` is optional. GitHub checks still run anonymously, but the token helps avoid anonymous API rate limits.
-- Missing Steam, Twitch, Reddit, or Tumblr credentials cause those platform checks to return `auth_failed`.
+- `TUMBLR_CONSUMER_KEY` is optional. When set, the Tumblr checker uses the Tumblr API; without it, the checker uses the public blog address for the username instead.
+- Missing Steam, Twitch, or Reddit credentials cause those platform checks to return `auth_failed`.
 - Missing SMTP variables make `/api/contact` return `503`.
 - `NEXT_PUBLIC_ADSENSE_CLIENT` injects the Google AdSense script from `src/app/layout.tsx`.
 - Do not commit real `.env` or `.env.local` files.
