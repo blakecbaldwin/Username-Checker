@@ -1,5 +1,5 @@
 import { getActivePlatforms, type CheckResult, type PlatformDefinition, type PlatformStatus } from "@/lib/platforms";
-import { getCachedResult, setCachedResult } from "@/lib/check-cache";
+import { getCachedResult, isCacheableResult, setCachedResult } from "@/lib/check-cache";
 
 const REQUEST_TIMEOUT_MS = 4000;
 const MAX_CONCURRENT_CHECKS = 4;
@@ -33,6 +33,20 @@ function withTimeout(url: string, init?: RequestInit) {
       ...init?.headers,
     },
   }).finally(() => clearTimeout(timeout));
+}
+
+// Fetches a URL only for its final HTTP status (after redirects) and discards
+// the body, for platforms whose public profile address answers 200 for an
+// existing profile and 404 for an unknown name.
+async function fetchStatus(url: string) {
+  const response = await withTimeout(url);
+  const status = response.status;
+  try {
+    await response.body?.cancel();
+  } catch {
+    // The status is already known; a failed body cancel changes nothing.
+  }
+  return status;
 }
 
 function isMissingEnv(names: string[] | undefined) {
@@ -71,7 +85,19 @@ function validateTumblr(username: string) {
   return /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{1,30}[a-zA-Z0-9])?$/.test(username);
 }
 
-const validators: Record<string, (username: string) => boolean> = {
+function validateKick(username: string) {
+  return /^[a-zA-Z0-9_]{3,25}$/.test(username);
+}
+
+function validateYouTube(username: string) {
+  return /^[a-zA-Z0-9](?:[a-zA-Z0-9._-]{1,28}[a-zA-Z0-9])$/.test(username);
+}
+
+function validateSoundCloud(username: string) {
+  return /^[a-zA-Z0-9](?:[a-zA-Z0-9_-]{1,23}[a-zA-Z0-9])$/.test(username);
+}
+
+export const validators: Record<string, (username: string) => boolean> = {
   github: validateGitHub,
   minecraft: validateMinecraft,
   reddit: validateReddit,
@@ -80,6 +106,9 @@ const validators: Record<string, (username: string) => boolean> = {
   twitch: validateTwitch,
   bluesky: validateBluesky,
   tumblr: validateTumblr,
+  kick: validateKick,
+  youtube: validateYouTube,
+  soundcloud: validateSoundCloud,
 };
 
 const tokenCache = new Map<string, { token: string; expiresAt: number }>();
@@ -245,13 +274,41 @@ const checkers: Record<string, Checker> = {
 
   async tumblr(username, platform) {
     const key = process.env.TUMBLR_CONSUMER_KEY;
-    if (!key) return result(platform, "auth_failed", "Missing Tumblr consumer key");
+    if (key) {
+      const params = new URLSearchParams({ api_key: key });
+      const response = await withTimeout(`https://api.tumblr.com/v2/blog/${username}.tumblr.com/info?${params.toString()}`);
+      if (response.status === 200) return result(platform, "taken", undefined, `https://${username}.tumblr.com/`);
+      if (response.status === 404) return result(platform, "available");
+      return result(platform, "unknown", `Tumblr returned ${response.status}`);
+    }
 
-    const params = new URLSearchParams({ api_key: key });
-    const response = await withTimeout(`https://api.tumblr.com/v2/blog/${username}.tumblr.com/info?${params.toString()}`);
-    if (response.status === 200) return result(platform, "taken", undefined, `https://${username}.tumblr.com/`);
-    if (response.status === 404) return result(platform, "available");
-    return result(platform, "unknown", `Tumblr returned ${response.status}`);
+    // Without a consumer key, the public blog address answers the same
+    // question the API does: an existing blog resolves, an unknown name 404s.
+    const status = await fetchStatus(`https://${username}.tumblr.com/`);
+    if (status === 200) return result(platform, "taken", undefined, `https://${username}.tumblr.com/`);
+    if (status === 404) return result(platform, "available");
+    return result(platform, "unknown", `Tumblr returned ${status}`);
+  },
+
+  async kick(username, platform) {
+    const status = await fetchStatus(`https://kick.com/api/v2/channels/${username}`);
+    if (status === 200) return result(platform, "taken", undefined, `https://kick.com/${username}`);
+    if (status === 404) return result(platform, "available");
+    return result(platform, "unknown", `Kick returned ${status}`);
+  },
+
+  async youtube(username, platform) {
+    const status = await fetchStatus(`https://www.youtube.com/@${username}`);
+    if (status === 200) return result(platform, "taken", undefined, `https://www.youtube.com/@${username}`);
+    if (status === 404) return result(platform, "available");
+    return result(platform, "unknown", `YouTube returned ${status}`);
+  },
+
+  async soundcloud(username, platform) {
+    const status = await fetchStatus(`https://soundcloud.com/${username}`);
+    if (status === 200) return result(platform, "taken", undefined, `https://soundcloud.com/${username}`);
+    if (status === 404) return result(platform, "available");
+    return result(platform, "unknown", `SoundCloud returned ${status}`);
   },
 };
 
@@ -278,7 +335,9 @@ export async function checkUsername(username: string) {
     try {
       const checker = checkers[platform.slug];
       const checked = checker ? await checker(normalizedUsername, platform) : result(platform, "disabled");
-      setCachedResult(cacheKey, checked);
+      if (isCacheableResult(checked)) {
+        setCachedResult(cacheKey, checked);
+      }
       return checked;
     } catch (error) {
       const reason = error instanceof Error && error.name === "AbortError" ? "Request timed out" : "Request failed";
