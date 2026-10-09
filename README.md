@@ -26,19 +26,19 @@ Active checks:
 - Twitch
 - Bluesky
 - Tumblr
+- Kick
+- YouTube
+- SoundCloud
 
 Requested or disabled checks:
 
-- Kick
 - Xbox
 - PlayStation
 - Facebook
 - Instagram
 - Pinterest
 - Snapchat
-- SoundCloud
 - TikTok
-- YouTube
 
 ## Tech Stack
 
@@ -84,7 +84,6 @@ Required for all active platform checks and contact form delivery:
 - `TWITCH_CLIENT_SECRET`
 - `REDDIT_CLIENT_ID`
 - `REDDIT_CLIENT_SECRET`
-- `TUMBLR_CONSUMER_KEY`
 - `SMTP_SERVER`
 - `SMTP_PORT`
 - `SMTP_USERNAME`
@@ -95,6 +94,7 @@ Required for all active platform checks and contact form delivery:
 Optional:
 
 - `GITHUB_TOKEN`
+- `TUMBLR_CONSUMER_KEY` (Tumblr checks fall back to the public blog address without it)
 - `NEXT_PUBLIC_ADSENSE_CLIENT`
 
 The app can run locally without every credential, but missing platform credentials return `auth_failed`, and missing SMTP configuration makes the contact API return `503`.
